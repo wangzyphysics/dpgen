@@ -1,0 +1,76 @@
+{
+    "deepmdkit_python":"/home/zhenyu/soft/deepmd-kit/bin/python",
+    "train_command":"/home/zhenyu/soft/deepmd-kit/bin/dp",
+    "train" :[
+        {
+            "machine": {
+                "batch":        "pbs",
+                "work_path":    "/home/zhenyu/dpgen/run/temp",
+                "_comment": "that's all"
+            },
+            "resources": {
+                "numb_node":            1,
+                "numb_gpu":             1,
+                "partition":            "P100_4_30",
+                "task_per_node":        4,
+                "exclude_list":         [],
+                "source_list":          ["activate py2","/home/zhenyu/intel/oneapi/setvars.sh --force"],
+                "module_list":          [],
+                "envs": {"LD_LIBRARY_PATH": "/opt/software/cuda/10.1/lib64:$LD_LIBRARY_PATH"},
+                "time_limit":           "48:0:0",
+                "_comment": "that's all"
+            }
+        }
+    ],
+   
+    "model_devi":
+    [
+	{
+	    "machine": {
+		"batch":	"pbs",
+                "work_path":    "/home/zhenyu/dpgen/run/temp",
+		"_comment": "that's all"
+	    },
+	    "resources": {
+		"numb_node":		1,
+		"numb_gpu":		1,
+		"partition":		"P100_4_30",
+		"task_per_node":	4,
+		"exclude_list":		[],
+		"source_list":		["activate py2","/home/zhenyu/intel/oneapi/setvars.sh --force"],
+		"module_list":		[],
+                "envs": {"LD_LIBRARY_PATH": "/opt/software/cuda/10.1/lib64:$LD_LIBRARY_PATH"},
+		"time_limit":		"48:0:0",
+		"_comment": "that's all"
+	    },
+	    "_command" :		"lmp",
+	    "command" :		"lmp",
+	    "group_size" :	500
+	}
+    ],
+
+    "fp":
+    [
+	{
+	    "machine": {
+		"batch":	"pbs",
+                "work_path":    "/home/zhenyu/dpgen/run/temp",
+		"_comment": "that's all"
+	    },
+	    "resources": {
+		"numb_node":	1,
+		"numb_gpu":	1,
+		"task_per_node": 4,
+		"with_mpi":	true,
+		"partition":	"P100_4_30",
+		"exclude_list": [],
+		"source_list":	["activate py2","/home/zhenyu/intel/oneapi/setvars.sh --force"],
+		"module_list":	[],
+		"time_limit":	"48:0:0",
+		"_comment": "that's all"
+	    },
+	    "command" : "/opt/vasp/vasp_std",
+	    "group_size" : 50
+	}
+    ]
+}
