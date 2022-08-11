@@ -18,10 +18,12 @@ def _parse_calypso_input(var,input_path):
                 return variable
 
 def _parse_calypso_dis_mtx(numberofspecies,input_path):
-        try:
-            f = open(input_path,'r')
-        except:
-            f = open(os.path.join(input_path,'input.dat'),'r')
+
+        if os.path.basename(input_path) != 'input.dat':
+            input_path = os.path.join(input_path,'input.dat')
+        if not os.path.exists(input_path):
+            raise FileNotFoundError(input_path)
+        f = open(input_path,'r')
         while True:
             line = f.readline()
             if len(line) == 0:
@@ -33,6 +35,6 @@ def _parse_calypso_dis_mtx(numberofspecies,input_path):
                     dis.append(line.split())
                 f.close()
                 break
-        dis = np.array(dis)
-        dis = dis.reshape((1,int(numberofspecies)**2))
-        return dis[0][np.argmin(dis)]
+        _dis = np.array(dis, dtype='float64')
+        dis = _dis.reshape((1,int(numberofspecies)**2))
+        return dis[0][np.argmin(dis)], _dis

@@ -1705,7 +1705,7 @@ def _select_by_model_devi_standard(
         # calypso_run_opt_path = os.path.join(_work_path,calypso_run_opt_name)
         calypso_run_opt_path = glob.glob('%s/%s.*'%(_work_path, calypso_run_opt_name))[0]
         numofspecies = _parse_calypso_input('NumberOfSpecies',calypso_run_opt_path)
-        min_dis = _parse_calypso_dis_mtx(numofspecies,calypso_run_opt_path)
+        min_dis, _ = _parse_calypso_dis_mtx(numofspecies,calypso_run_opt_path)
     fp_candidate = []
     if detailed_report_make_fp:
         fp_rest_accurate = []
@@ -1897,7 +1897,7 @@ def _make_fp_vasp_inner (modd_path,
         # calypso_run_opt_path = os.path.join(_work_path,calypso_run_opt_name)
         calypso_run_opt_path = glob.glob('%s/%s.*'%(_work_path, calypso_run_opt_name))[0]
         numofspecies = _parse_calypso_input('NumberOfSpecies',calypso_run_opt_path)
-        min_dis = _parse_calypso_dis_mtx(numofspecies,calypso_run_opt_path)
+        min_dis, _ = _parse_calypso_dis_mtx(numofspecies,calypso_run_opt_path)
 
         calypso_total_fp_num = 300
         modd_path = os.path.join(modd_path,calypso_model_devi_name)

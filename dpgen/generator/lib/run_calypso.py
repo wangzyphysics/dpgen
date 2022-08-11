@@ -17,6 +17,8 @@ import shutil
 import sys
 from ase.io.vasp import write_vasp
 from ase.io.trajectory import Trajectory
+from ase.geometry.analysis import Analysis
+from ase.build import make_supercell
 from pathlib import Path
 from itertools import combinations
 from distutils.version import LooseVersion
@@ -24,6 +26,7 @@ from dpgen import dlog
 from dpgen.generator.lib.utils import create_path
 from dpgen.generator.lib.utils import make_iter_name
 from dpgen.generator.lib.parse_calypso import _parse_calypso_input
+from dpgen.generator.lib.parse_calypso import _parse_calypso_dis_mtx
 from dpgen.dispatcher.Dispatcher import make_dispatcher, make_submission
 
 train_name = '00.train'
@@ -310,6 +313,53 @@ def gen_main(iter_index, jdata, mdata, caly_run_opt_list, gen_idx):
             gen_structures(iter_index, jdata, mdata, temp_path, iidx, len(caly_run_opt_list))
 
 
+def is_bond_reasonable(atoms, type_map, distance_matrix):
+    '''
+    type_map=['Li','La','H']
+    return: min dis of different type bonds including
+             `Li-La`, `Li-H`, `La-H`, `Li-Li`, `La-La`, `H-H`
+    distance_matrix = [['LiLi', 'LiLa', 'LiH'],
+                       ['LaLi', 'LaLa', 'LaH'],
+                       ['H-Li', 'H-La', 'H-H']]
+    distance_vector = ['LiLa', 'LiH', 'LaH', 'LiLi', 'LaLa', 'HH']
+                       --------------------   --------------------
+                distance_matrix[idx][temp_num:]    np.diagonal(distance_matrix)
+    '''
+    number_of_species = np.array(distance_matrix).shape[0]
+    distance_vector = []
+    temp_num = -number_of_species
+    for idx in range(number_of_species - 1):
+        temp_num += 1
+        distance_vector.extend(distance_matrix[idx][temp_num:].tolist())
+    distance_vector.extend(np.diagonal(distance_matrix).tolist())
+    # distance_vector = [LiLa, LiH, LaH, LiLi, LaLa, HH]
+
+    diff_bond_type = list(map(list, combinations(type_map, 2)))
+    for same_type in type_map:
+        diff_bond_type.extend([[same_type, same_type]])
+
+    bond_situation = []
+    for each_type in diff_bond_type:
+        # bond_situation_key = ''.join(each_type)
+        ana = Analysis(atoms)
+        bond_indice = ana.get_bonds(each_type[0], each_type[1], unique=True)
+        if bond_indice == [[]]:
+            min_dis = np.array(203)
+            # min_dis = np.nan
+        else:
+            bond_value = ana.get_values(bond_indice)
+            min_dis = np.nanmin(bond_value[0])
+        bond_situation.append(float(min_dis))
+    check_distance = True
+    contract_distance = zip(np.array(distance_vector), np.array(bond_situation))
+    for standard, current in contract_distance:
+        if current <= standard:
+            check_distance = False
+            return check_distance
+
+    return check_distance
+
+
 def analysis(iter_index, jdata, calypso_model_devi_path):
     # Analysis
 
@@ -324,6 +374,10 @@ def analysis(iter_index, jdata, calypso_model_devi_path):
     create_path(deepmd_data_path)
     create_path(traj_pos_path)
 
+    type_map = jdata.get('type_map')
+    _, distance_matrix = _parse_calypso_dis_mtx(
+        len(type_map), f'{work_path}/gen_stru_analy.000/input.dat'
+        )
     # trajs to be model devi
     # traj_path = os.path.join(calypso_run_opt_path,'traj')
     # traj_list = glob.glob(traj_path+'/*.traj')
@@ -336,6 +390,14 @@ def analysis(iter_index, jdata, calypso_model_devi_path):
         traj_num = os.path.basename(traj_name).split('.')[0]
         press_num = traj_name.split('/')[-3].split('.')[-1]
         trajs_origin = Trajectory(traj_name)
+
+        first_atoms = trajs_origin[0]
+        if 1 in first_atoms.symbols.formula.count().values():
+            first_atoms = make_supercell(first_atoms, [[2, 0, 0], [0, 2, 0], [0, 0, 2]])
+        _is_bond_reasonable = is_bond_reasonable(first_atoms, jdata.get('type_map'), distance_matrix)
+        if not _is_bond_reasonable:
+            dlog.info(f'{traj_name} {_is_bond_reasonable}')
+            continue
 
         record_traj_num += len(trajs_origin)
         if len(trajs_origin) >= 20 :

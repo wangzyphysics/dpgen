@@ -84,9 +84,13 @@ class TestCALYPSOScript(unittest.TestCase):
         #nameofatoms = _parse_calypso_input('NameOfAtoms',calypso_data).split()
         self.assertEqual(nameofatoms,model_devi_jobs.get('model_devi_jobs').get('NameOfAtoms'))
         
-        min_dis = _parse_calypso_dis_mtx(len(nameofatoms),'input.dat')
+        min_dis, dis_mtx = _parse_calypso_dis_mtx(len(nameofatoms),'input.dat')
         #min_dis = _parse_calypso_dis_mtx(len(nameofatoms),calypso_data)
         self.assertEqual(float(min_dis),np.nanmin(model_devi_jobs.get('model_devi_jobs').get('DistanceOfIon')))
+        self.assertEqual(
+            np.array(dis_mtx).shape,
+            np.array(model_devi_jobs.get('model_devi_jobs').get('DistanceOfIon')).shape
+)
         os.remove('input.dat')
 
 
