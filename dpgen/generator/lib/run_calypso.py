@@ -363,7 +363,7 @@ def is_bond_reasonable(atoms, type_map, distance_matrix):
 def analysis(iter_index, jdata, calypso_model_devi_path):
     # Analysis
 
-    ms = dpdata.MultiSystems()
+    ms = dpdata.MultiSystems(type_map=jdata['type_map'])
 
     cwd = os.getcwd()
     iter_name = make_iter_name(iter_index)

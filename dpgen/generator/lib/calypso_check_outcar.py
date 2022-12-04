@@ -62,6 +62,7 @@ def Write_Outcar(element, ele, volume, lat, pos, ene, force, stress,pstress):
     f.write('\n')
     ext_pressure = np.sum(stress[0] + stress[1] + stress[2])/3.0 - pstress
     f.write('external pressure = %20.6f kB    Pullay stress = %20.6f  kB\n'% (ext_pressure, pstress))
+<<<<<<< HEAD
     f.write('volume of cell : %20.6f\n' % volume)
     f.write('direct lattice vectors\n')
     for i in range(3):
