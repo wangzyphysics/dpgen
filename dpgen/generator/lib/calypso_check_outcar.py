@@ -3,8 +3,9 @@
 
 import numpy as np
 import os,sys,glob,time
-from deepmd.calculator import DP
+# from deepmd.calculator import DP
 from ase.io import read 
+from ase.io.trajectory import TrajectoryWriter
 
 '''
 check if structure optimization worked well
@@ -78,22 +79,26 @@ def Write_Outcar(element, ele, volume, lat, pos, ene, force, stress,pstress):
 
 def check():
 
-    from deepmd.calculator import DP
-    from ase.io import read
-    calc = DP(model='../graph.000.pb')    # init the model before iteration
+    # from deepmd.calculator import DP
+    # from ase.io import read
+    # calc = DP(model='../graph.000.pb')    # init the model before iteration
 
     to_be_opti = read('POSCAR')
-    to_be_opti.calc = calc     
+    traj = TrajectoryWriter('traj.traj', 'w', to_be_opti)
+    traj.close()
+    # to_be_opti.calc = calc     
     # ---------------------------------
     # for failed outcar 
     atoms_symbols_f = to_be_opti.get_chemical_symbols()
     element_f, ele_f = Get_Element_Num(atoms_symbols_f)
     atoms_vol_f = to_be_opti.get_volume() 
-    atoms_stress_f = to_be_opti.get_stress()
-    atoms_stress_f = atoms_stress_f/(0.01*0.6242)
+    # atoms_stress_f = to_be_opti.get_stress()
+    # atoms_stress_f = atoms_stress_f/(0.01*0.6242)
+    atoms_stress_f = np.array([0, 0, 0, 0, 0, 0])
     atoms_lat_f = to_be_opti.cell 
     atoms_pos_f = to_be_opti.positions
-    atoms_force_f = to_be_opti.get_forces()
+    # atoms_force_f = to_be_opti.get_forces()
+    atoms_force_f = np.zeros((atoms_pos_f.shape[0], 3))
     atoms_ene_f =  610612509 
     # --------------------------------- 
     Write_Contcar(element_f, ele_f, atoms_lat_f, atoms_pos_f)
