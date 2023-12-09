@@ -11,19 +11,42 @@ from deepmd.infer import calc_model_devi
 from deepmd.infer import DeepPot as DP
 
 
-def write_model_devi_out(devi, fname):
-    assert devi.shape[1] == 8
-    #assert devi.shape[1] == 7
-    header = '%5s' % 'step'
-    for item in 'vf':
-        header += '%16s%16s%16s' % (f'max_devi_{item}', f'min_devi_{item}',f'avg_devi_{item}')
-    header += '%16s'%str('min_dis')
-    np.savetxt(fname,
-               devi,
-               fmt=['%5d'] + ['%17.6e' for _ in range(7)],
-               delimiter='',
-               header=header)
+# def write_model_devi_out(devi, fname):
+#     print(devi.shape)
+#     assert devi.shape[1] == 8
+#     #assert devi.shape[1] == 7
+#     header = '%5s' % 'step'
+#     for item in 'vf':
+#         header += '%16s%16s%16s' % (f'max_devi_{item}', f'min_devi_{item}',f'avg_devi_{item}')
+#     header += '%16s'%str('min_dis')
+#     np.savetxt(fname,
+#                devi,
+#                fmt=['%5d'] + ['%17.6e' for _ in range(7)],
+#                delimiter='',
+#                header=header)
+#     return devi
+
+def write_model_devi_out(devi: np.ndarray, fname: str, header: str = ""):
+    assert devi.shape[1] == 9
+    header = "%s\n%10s" % (header, "step")
+    for item in "vf":
+        header += "%19s%19s%19s" % (
+            f"max_devi_{item}",
+            f"min_devi_{item}",
+            f"avg_devi_{item}",
+        )
+    header += "%19s" % "devi_e"
+    header += '%19s' % str('min_dis')
+    with open(fname, "ab") as fp:
+        np.savetxt(
+            fp,
+            devi,
+            fmt=["%12d"] + ["%19.6e" for _ in range(8)],
+            delimiter="",
+            header=header,
+        )
     return devi
+
 
 
 def Modd(all_models,type_map):

@@ -1763,9 +1763,9 @@ def _select_by_model_devi_standard(
             warnings.simplefilter("ignore")
             all_conf = _read_model_devi_file(tt, model_devi_f_avg_relative, model_devi_merge_traj)
 
-            if all_conf.shape == (7,):
+            if all_conf.shape == (8,):
                 all_conf = all_conf.reshape(1,all_conf.shape[0])
-            elif model_devi_engine == 'calypso' and all_conf.shape == (8,):
+            elif model_devi_engine == 'calypso' and all_conf.shape == (9,):
                 all_conf = all_conf.reshape(1,all_conf.shape[0])
             for ii in range(all_conf.shape[0]) :
                 if all_conf[ii][0] < model_devi_skip :
@@ -1950,7 +1950,8 @@ def _make_fp_vasp_inner (iter_index,
         model_devi_skip = -1
         with open(os.path.join(modd_path,'Model_Devi.out'),'r') as summfile:
             summary = np.loadtxt(summfile)
-        summaryfmax = summary[:,-4]
+        # summaryfmax = summary[:,-4]  # work for old verion : dp 215 and below
+        summaryfmax = summary[:, 4]    # work for new version : dp 222
         dis  = summary[:,-1]
         acc  = np.where((summaryfmax <= f_trust_lo) & (dis > float(min_dis)))
         fail = np.where((summaryfmax >  f_trust_hi) | (dis <= float(min_dis)))
@@ -2448,7 +2449,8 @@ def make_fp_vasp_kp (iter_index,jdata):
         assert(os.path.exists('INCAR'))
         with open('INCAR') as fp:
             incar = fp.read()
-        standard_incar = incar_upper(Incar.from_string(incar))
+        # standard_incar = incar_upper(Incar.from_string(incar))
+        standard_incar = incar_upper(Incar.from_str(incar))
         if fp_aniso_kspacing is None:
             try:
                 kspacing = standard_incar['KSPACING']
@@ -2471,7 +2473,8 @@ def make_fp_vasp_kp (iter_index,jdata):
         assert(os.path.exists('POSCAR'))
         # make kpoints
         ret=make_kspacing_kpoints('POSCAR', kspacing, gamma)
-        kp=Kpoints.from_string(ret)
+        # kp=Kpoints.from_string(ret)
+        kp=Kpoints.from_str(ret)
         kp.write_file("KPOINTS")
         os.chdir(cwd)
 
@@ -3790,6 +3793,7 @@ def run_iter (param_file, machine_file) :
         iter_name=make_iter_name(ii)
         sepline(iter_name,'=')
         for jj in range (numb_task) :
+            print(jj)
             if ii * max_tasks + jj <= iter_rec[0] * max_tasks + iter_rec[1] :
                 continue
             task_name="task %02d"%jj

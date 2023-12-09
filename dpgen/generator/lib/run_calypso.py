@@ -54,6 +54,7 @@ def gen_structures(iter_index, jdata, mdata, caly_run_path, current_idx, length_
     calypso_model_devi_path = os.path.join(work_path,calypso_model_devi_name)
 
     calypso_path = mdata.get('model_devi_calypso_path')
+    print(calypso_path)
     #calypso_input_path = jdata.get('calypso_input_path')
     
     all_models = glob.glob(os.path.join(calypso_run_opt_path, 'graph*pb'))
