@@ -70,7 +70,7 @@ Here is an example of `param.json` for QM7 dataset:
         "learning_rate": {
             "type": "exp",
             "start_lr": 0.001,
-            "decay_steps": 10,
+            "stop_lr": 5e-8,
             "decay_rate": 0.99
         },
         "loss": {
@@ -84,13 +84,11 @@ Here is an example of `param.json` for QM7 dataset:
             "limit_pref_pf": 0
         },
         "training": {
-            "set_prefix": "set",
-            "stop_batch": 10000,
+            "numb_steps": 10000,
             "disp_file": "lcurve.out",
             "disp_freq": 1000,
             "numb_test": 1,
             "save_freq": 1000,
-            "save_ckpt": "model.ckpt",
             "disp_training": true,
             "time_training": true,
             "profiling": false,
@@ -119,4 +117,3 @@ Here is an example of `param.json` for QM7 dataset:
 ```
 
 Here {dargs:argument}`pick_data <simplify_jdata/pick_data>` is the directory to data to simplify where the program recursively detects systems `System` with `deepmd/npy` format. {dargs:argument}`init_pick_number <simplify_jdata/init_pick_number>` and {dargs:argument}`iter_pick_number <simplify_jdata/iter_pick_number>` are the numbers of picked frames. {dargs:argument}`model_devi_f_trust_lo <simplify_jdata/model_devi_f_trust_lo>` and {dargs:argument}`model_devi_f_trust_hi <simplify_jdata/model_devi_f_trust_hi>` mean the range of the max deviation of atomic forces in a frame. {dargs:argument}`fp_style <simplify_jdata/fp_style>` can be either `gaussian` or `vasp` currently. Other parameters are as the same as those of generator.
-
