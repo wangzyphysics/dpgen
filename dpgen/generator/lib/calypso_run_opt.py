@@ -2,6 +2,7 @@
 
 import os
 import time
+import sys
 
 import numpy as np
 from ase.constraints import UnitCellFilter
@@ -112,7 +113,7 @@ def read_stress_fmax():
 
 def run_opt(fmax, stress):
     """Using the ASE&DP to Optimize Configures."""
-    calc = DP(model="../graph.000.pb")  # init the model before iteration
+    calc = DP(model=sys.argv[1])  # init the model before iteration
     os.system("mv OUTCAR OUTCAR-last")
 
     print("Start to Optimize Structures by DP----------")
@@ -170,3 +171,4 @@ def run():
 
 if __name__ == "__main__":
     run()
+
