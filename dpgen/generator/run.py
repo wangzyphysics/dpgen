@@ -1233,13 +1233,23 @@ def make_model_devi(iter_index, jdata, mdata):
                 else:
                     number_of_pressure = len(list(set(one_ele_inputdat_list)))
 
-                # calypso_run_opt_path = ['gen_struc_analy.000','gen_struc_analy.001']
-                for temp_idx in range(number_of_pressure):
-                    calypso_run_opt_path.append(
-                        "%s.%03d" % (_calypso_run_opt_path, temp_idx)
-                    )
             elif not jdata.get("vsc", False):
-                calypso_run_opt_path.append("%s.%03d" % (_calypso_run_opt_path, 0))
+                # [input.dat.Li.250, input.dat.Li.300]
+                inputdat_list = glob.glob(
+                    f"{jdata.get('calypso_input_path')}/input.dat.p*"
+                )
+                if len(inputdat_list) == 0:
+                    number_of_pressure = 1
+                else:
+                    number_of_pressure = len(list(set(inputdat_list)))
+
+                # calypso_run_opt_path.append("%s.%03d" % (_calypso_run_opt_path, 0))
+
+            # calypso_run_opt_path = ['gen_struc_analy.000','gen_struc_analy.001']
+            for temp_idx in range(number_of_pressure):
+                calypso_run_opt_path.append(
+                    "%s.%03d" % (_calypso_run_opt_path, temp_idx)
+                )
 
         # mode 2: control each iteration to generate structures in specific way
         # by providing model_devi_jobs key
@@ -2164,7 +2174,8 @@ def run_model_devi(iter_index, jdata, mdata):
     if model_devi_engine != "calypso":
         run_md_model_devi(iter_index, jdata, mdata)
     else:
-        run_calypso_model_devi(iter_index, jdata, mdata)
+        suffix = _get_model_suffix(jdata)
+        run_calypso_model_devi(iter_index, jdata, mdata, suffix=suffix)
 
 
 def post_model_devi(iter_index, jdata, mdata):
@@ -2354,7 +2365,7 @@ def _select_by_model_devi_standard(
         # calypso_run_opt_path = os.path.join(_work_path,calypso_run_opt_name)
         calypso_run_opt_path = glob.glob(f"{_work_path}/{calypso_run_opt_name}.*")[0]
         numofspecies = _parse_calypso_input("NumberOfSpecies", calypso_run_opt_path)
-        min_dis = _parse_calypso_dis_mtx(numofspecies, calypso_run_opt_path)
+        min_dis, _ = _parse_calypso_dis_mtx(numofspecies, calypso_run_opt_path)
     fp_candidate = []
     fp_rest_accurate = []
     fp_rest_failed = []
@@ -2567,16 +2578,16 @@ def _make_fp_vasp_inner(
         # calypso_run_opt_path = os.path.join(_work_path,calypso_run_opt_name)
         calypso_run_opt_path = glob.glob(f"{_work_path}/{calypso_run_opt_name}.*")[0]
         numofspecies = _parse_calypso_input("NumberOfSpecies", calypso_run_opt_path)
-        min_dis = _parse_calypso_dis_mtx(numofspecies, calypso_run_opt_path)
+        min_dis, _ = _parse_calypso_dis_mtx(numofspecies, calypso_run_opt_path)
 
-        calypso_total_fp_num = 300
+        calypso_total_fp_num = 500
         modd_path = os.path.join(modd_path, calypso_model_devi_name)
         model_devi_skip = -1
         with open(os.path.join(modd_path, "Model_Devi.out")) as summfile:
             summary = np.loadtxt(summfile)
         # summaryfmax = summary[:,-4]  # work for old verion : dp 215 and below
         # summaryfmax = summary[:, 4]    # work for new version : dp 222
-        summaryfmax = summary[:, -4]
+        summaryfmax = summary[:, 4]
         dis = summary[:, -1]
         acc = np.where((summaryfmax <= f_trust_lo) & (dis > float(min_dis)))
         fail = np.where((summaryfmax > f_trust_hi) | (dis <= float(min_dis)))
