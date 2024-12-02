@@ -10,8 +10,8 @@ import numpy as np
 
 
 def write_model_devi_out(devi, fname):
-    assert devi.shape[1] == 8
-    # assert devi.shape[1] == 7
+    assert devi.shape[1] == 9
+    # idx, max_devi_v, min_devi_v, avg_devi_v, max_devi_f, min_devi_f, avg_devi_f, devi_e, min_dis
     header = "%5s" % "step"
     for item in "vf":
         header += "%16s%16s%16s" % (
@@ -19,11 +19,12 @@ def write_model_devi_out(devi, fname):
             f"min_devi_{item}",
             f"avg_devi_{item}",
         )
+    header += "%19s" % "devi_e"
     header += "%16s" % "min_dis"
     np.savetxt(
         fname,
         devi,
-        fmt=["%5d"] + ["%17.6e" for _ in range(7)],
+        fmt=["%5d"] + ["%17.6e" for _ in range(devi.shape[1] - 1)],
         delimiter="",
         header=header,
     )
