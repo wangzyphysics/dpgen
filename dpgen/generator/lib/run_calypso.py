@@ -37,6 +37,7 @@ def gen_structures(
     caly_run_path,
     current_idx,
     length_of_caly_runopt_list,
+    suffix=".pb",
 ):
     # run calypso
     # vsc means generate elemental, binary and ternary at the same time
@@ -56,12 +57,14 @@ def gen_structures(
     calypso_path = mdata.get("model_devi_calypso_path")
     # calypso_input_path = jdata.get('calypso_input_path')
 
-    all_models = glob.glob(os.path.join(calypso_run_opt_path, "graph*pb"))
+    all_models = sorted(glob.glob(os.path.join(calypso_run_opt_path, f"graph*{suffix}")))
+
+    # all_models = glob.glob(os.path.join(calypso_run_opt_path, "graph*pb"))
     model_names = [os.path.basename(ii) for ii in all_models]
 
     deepmdkit_python = mdata.get("model_devi_deepmdkit_python")
     command = (
-        f"{deepmdkit_python} calypso_run_opt.py  1>> model_devi.log 2>> model_devi.log"
+        f"{deepmdkit_python} calypso_run_opt.py ../{model_names[0]} 1>> model_devi.log 2>> model_devi.log"
     )
     # command = "%s calypso_run_opt.py %s 1>> model_devi.log 2>> model_devi.log" % (deepmdkit_python,os.path.abspath(calypso_run_opt_path))
     # command += "  ||  %s check_outcar.py %s " % (deepmdkit_python,os.path.abspath(calypso_run_opt_path))
@@ -101,7 +104,8 @@ def gen_structures(
         for ii in range(int(PickUpStep) - 1, maxstep + 1):
             dlog.info(f"CALYPSO step {ii}")
             if ii == maxstep:
-                os.system(f"{run_calypso}")
+                # pass the last run
+                # os.system(f"{run_calypso}")
                 break
             # run calypso
 
@@ -339,7 +343,7 @@ def gen_structures(
     os.chdir(cwd)
 
 
-def gen_main(iter_index, jdata, mdata, caly_run_opt_list, gen_idx):
+def gen_main(iter_index, jdata, mdata, caly_run_opt_list, gen_idx, suffix=".pb"):
     iter_name = make_iter_name(iter_index)
     work_path = os.path.join(iter_name, model_devi_name)
 
@@ -356,7 +360,13 @@ def gen_main(iter_index, jdata, mdata, caly_run_opt_list, gen_idx):
     for iidx, temp_path in enumerate(caly_run_opt_list):
         if iidx >= indice:
             gen_structures(
-                iter_index, jdata, mdata, temp_path, iidx, len(caly_run_opt_list)
+                iter_index,
+                jdata,
+                mdata,
+                temp_path,
+                iidx,
+                len(caly_run_opt_list),
+                suffix=suffix,
             )
 
 
@@ -514,7 +524,7 @@ def analysis(iter_index, jdata, calypso_model_devi_path):
     os.chdir(cwd)
 
 
-def run_calypso_model_devi(iter_index, jdata, mdata):
+def run_calypso_model_devi(iter_index, jdata, mdata, suffix=".pb"):
     dlog.info("start running CALYPSO")
 
     iter_name = make_iter_name(iter_index)
@@ -549,7 +559,7 @@ def run_calypso_model_devi(iter_index, jdata, mdata):
         if lines[-1].strip().strip("\n").split()[0] == "1":
             # Gen Structures
             gen_index = lines[-1].strip().strip("\n").split()[1]
-            gen_main(iter_index, jdata, mdata, caly_run_opt_list, gen_index)
+            gen_main(iter_index, jdata, mdata, caly_run_opt_list, gen_index, suffix=suffix)
 
         elif lines[-1].strip().strip("\n") == "2":
             # Analysis & to deepmd/raw
@@ -558,7 +568,7 @@ def run_calypso_model_devi(iter_index, jdata, mdata):
         elif lines[-1].strip().strip("\n") == "3":
             # Model Devi
             _calypso_run_opt_path = os.path.abspath(caly_run_opt_list[0])
-            all_models = glob.glob(os.path.join(_calypso_run_opt_path, "graph*pb"))
+            all_models = glob.glob(os.path.join(_calypso_run_opt_path, f"graph*{suffix}"))
             cwd = os.getcwd()
             os.chdir(calypso_model_devi_path)
             args = " ".join(
