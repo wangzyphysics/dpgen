@@ -32,9 +32,9 @@ def _parse_calypso_dis_mtx(numberofspecies, input_path):
             dis = []
             for i in range(int(numberofspecies)):
                 line = f.readline()
-                dis.append(line.split())
+                dis.append(list(map(float, line.split())))
             f.close()
             break
-    dis = np.array(dis)
-    dis = dis.reshape((1, int(numberofspecies) ** 2))
-    return dis[0][np.argmin(dis)], dis
+    _dis = np.array(dis)
+    dis = _dis.reshape((1, int(numberofspecies) ** 2))
+    return dis[0][np.argmin(dis)], _dis
